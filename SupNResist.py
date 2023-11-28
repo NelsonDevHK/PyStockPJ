@@ -1,6 +1,8 @@
 import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime
+
+
 def support(df, current, before, after): 
     # the FIRST candle stick need to have a before
     # the LAST candle stick need to have an after
@@ -36,7 +38,28 @@ for row in range(3, 205): #len(df)-n2
     if resistance(df, row, n1, n2):
         ResistArr.append((row,df.high[row]))
 
+# tempss= [SupportArr[1]]
+# temprr = [ResistArr[1]]
 
+tempss = [x[1] for x in SupportArr]
+temprr = [x[1] for x in SupportArr]
+
+tempss.sort()
+temprr.sort()
+for i in range(1,len(tempss)):
+    if(i>=len(tempss)):
+        break
+    if (abs(tempss[i] -tempss[i-1])<=0.005):
+        tempss.pop(i)
+
+for i in range(1,len(temprr)):
+    if(i>=len(temprr)):
+        break
+    if abs(temprr[i]-temprr[i-1])<=0.005:
+        temprr.pop(i)
+
+SupportArr = tempss
+ResistArr = temprr
 
 start = 0
 end = 200
@@ -53,7 +76,7 @@ Cur = 0
 while (1):
     if(Cur>len(SupportArr)-1 ):
         break
-    fig.add_shape(type='line', x0=SupportArr[Cur][0], y0=SupportArr[Cur][1],
+    fig.add_shape(type='line', x0=start, y0=SupportArr[Cur][1],
                   x1=end,
                   y1=SupportArr[Cur][1],
                   line=dict(color="green",width=3)
@@ -64,7 +87,7 @@ Cur=0
 while (1):
     if(Cur>len(ResistArr)-1 ):
         break
-    fig.add_shape(type='line', x0=ResistArr[Cur][0], y0=ResistArr[Cur][1],
+    fig.add_shape(type='line', x0=start, y0=ResistArr[Cur][1],
                   x1=end,
                   y1=ResistArr[Cur][1],
                   line=dict(color="red",width=1)
