@@ -1,15 +1,10 @@
 import pandas as pd
-
-df = pd.read_csv("EURUSD_Candlestick_1_D_ASK_05.05.2003-19.10.2019.csv")
-
-df = df[df['volume'] != 0 ]
-
-df.reset_index(drop=True,inplace=True)
-df.isna().sum()
-print(df.tail())
-
+import plotly.graph_objects as go
+from datetime import datetime
 def support(df, current, before, after): 
-    current = current + 1
+    # the FIRST candle stick need to have a before
+    # the LAST candle stick need to have an after
+    current = current + 1 
     for i in range(current - before, current):
         if(df.low[i] > df.low[i - 1]):
             return 0
@@ -27,3 +22,53 @@ def resistance(df, current, before, after):
         if(df.low[i] > df.low[i - 1]):
             return 0
     return 1
+
+
+df = pd.read_csv("EURUSD_Candlestick_1_D_ASK_05.05.2003-19.10.2019.csv")
+
+SupportArr = []
+ResistArr = []
+n1=2
+n2=2
+for row in range(3, 205): #len(df)-n2
+    if support(df, row, n1, n2):
+        SupportArr.append((row,df.low[row]))
+    if resistance(df, row, n1, n2):
+        ResistArr.append((row,df.high[row]))
+
+
+
+start = 0
+end = 200
+dfpl = df[start:end]
+
+fig = go.Figure(data=[go.Candlestick(x=dfpl.index,
+                open=dfpl['open'],
+                high=dfpl['high'],
+                low=dfpl['low'],
+                close=dfpl['close'])])
+
+Cur = 0
+
+while (1):
+    if(Cur>len(SupportArr)-1 ):
+        break
+    fig.add_shape(type='line', x0=SupportArr[Cur][0], y0=SupportArr[Cur][1],
+                  x1=end,
+                  y1=SupportArr[Cur][1],
+                  line=dict(color="green",width=3)
+                  )
+    Cur+=1
+
+Cur=0
+while (1):
+    if(Cur>len(ResistArr)-1 ):
+        break
+    fig.add_shape(type='line', x0=ResistArr[Cur][0], y0=ResistArr[Cur][1],
+                  x1=end,
+                  y1=ResistArr[Cur][1],
+                  line=dict(color="red",width=1)
+                  )
+    Cur+=1    
+fig.show()
+
